@@ -1,0 +1,15 @@
+.wp-block-custom-spreadsheet-upload-block {
+    max-width: none !important;
+}
+
+.spreadsheet-table {
+    font-size: 12px;
+}
+
+table.spreadsheet-table, .spreadsheet-table tr, .spreadsheet-table td{
+    border: 1px solid;
+}
+
+.title-row {
+    font-weight: bold;
+}
