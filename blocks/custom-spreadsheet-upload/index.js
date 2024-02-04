@@ -3,6 +3,33 @@ const { createElement } = wp.element;
 const { Table, TableRow, TableCell } = wp.editor;
 const { Button } = wp.components;
 
+function convertSpreadsheetToHTML(spreadsheetFile) {
+    return new Promise((resolve, rejected) => {
+        console.log(spreadsheetFile);
+        
+        //Defines reader to read spreadsheet as buffer
+        const reader = new FileReader();
+
+        //Reads spreadsheet and converts to HTML
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+
+            const htmlWorksheet = XLSX.utils.sheet_to_html(worksheet);
+
+            resolve(htmlWorksheet);
+        };
+
+        reader.onerror = (error) => {
+            rejected(error);
+        }
+
+        reader.readAsArrayBuffer(spreadsheetFile);
+    });
+}
+
 function parseHTMLTable(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const tableElement = doc.querySelector('table');
@@ -39,27 +66,16 @@ registerBlockType('custom-spreadsheet-upload/block', {
     },
     edit: ({ attributes, setAttributes }) => {
         const onFileChange = (event) => {
-            setAttributes({selectedFile: event.target.files[0]})
+            setAttributes({selectedFile: event.target.files[0]});
             const file = event.target.files[0];
-            if (file) {
-                console.log(file);
-                
-                const reader = new FileReader();
 
-                reader.onload = (e) => {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-
-                    //console.log(XLSX.utils.sheet_to_html(worksheet));
-                    const htmlWorksheet = XLSX.utils.sheet_to_html(worksheet);
-
-                    setAttributes({parsedData: htmlWorksheet });
-                    //console.log(typeof attributes.parsedData);
-                };
-                reader.readAsArrayBuffer(file);
-            }
+            convertSpreadsheetToHTML(file)
+                .then((htmlString) => {
+                    setAttributes({parsedData: htmlString});
+                })
+                .catch((error) => {
+                    console.log(error);
+                })
         };
 
         return createElement('div', null, 
