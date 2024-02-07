@@ -34,14 +34,10 @@ function parseHTMLTable(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const tableElement = doc.querySelector('table');
 
-    //console.log(tableElement);
-
     if (!tableElement) {
         //console.log('bad table');
         return [];
     }
-
-    //console.log('table ran')
 
     const rows = Array.from(tableElement.querySelectorAll('tr'));
 
@@ -50,6 +46,11 @@ function parseHTMLTable(html) {
     );
 } 
 
+function pullTableElement(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.querySelector('table');
+}
+
 
 
 registerBlockType('custom-spreadsheet-upload/block', {
@@ -57,43 +58,46 @@ registerBlockType('custom-spreadsheet-upload/block', {
     icon: 'menu',
     category: 'common',
     attributes: {
-        parsedData: {
+        htmlSpreadsheetData: {
             type: 'string'
         },
-        selectedFile: {
+        tableData: {
             type: 'string'
         }
     },
     edit: ({ attributes, setAttributes }) => {
         const onFileChange = (event) => {
-            setAttributes({selectedFile: event.target.files[0]});
             const file = event.target.files[0];
 
             convertSpreadsheetToHTML(file)
                 .then((htmlString) => {
-                    setAttributes({parsedData: htmlString});
+                    setAttributes({htmlSpreadsheetData: htmlString});
                 })
                 .catch((error) => {
                     console.log(error);
                 })
+
+            setAttributes({tableData: pullTableElement(attributes.htmlSpreadsheetData)});
         };
 
         return createElement('div', null, 
-            createElement('input', {
-                type: 'file',
-                onChange: onFileChange,
-                accept: '.xlsx',
-            }),
-            createElement(Button, {
-                onClick: function () {
-                    console.log(attributes.parsedData);
-                },
-            }, 'Log Parsed Data'),
-        );
+            createElement('div', null, 
+                createElement('input', {
+                    type: 'file',
+                    onChange: onFileChange,
+                    accept: '.xlsx',
+                }),
+                createElement(Button, {
+                    onClick: function () {
+                        console.log(attributes.tableData);
+                    },
+                }, 'Log Parsed Data'),
+            )
+        )
     },
     save: ({ attributes }) => {
         // Parse the HTML table content into rows and cells
-        const rows = parseHTMLTable(attributes.parsedData);
+        const rows = parseHTMLTable(attributes.htmlSpreadsheetData);
     
         return createElement('div', null, createElement(
             'table',
@@ -106,12 +110,12 @@ registerBlockType('custom-spreadsheet-upload/block', {
             rows.map((row, rowIndex) =>
                 createElement(
                     'tr',
-                    { key: rowIndex, className: rowIndex === 0 ? 'title-row' : ''},
+                    { key: rowIndex, className: rowIndex === 0 ? 'title-row' : null },
                     // Iterate over the cells in each row and create TableCell components
                     row.map((cell, cellIndex) =>
                         createElement(
                             'td',
-                            { key: cellIndex },
+                            { key: cellIndex, className: 'column-' + (cellIndex+1) },
                             // The content of each cell
                             cell
                         )
