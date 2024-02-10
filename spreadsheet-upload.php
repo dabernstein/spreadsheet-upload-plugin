@@ -7,7 +7,6 @@ Author: Daniel Bernstein
 */
 
 //Adding main component file
-require_once plugin_dir_path( __FILE__ ) . 'components/spreadsheet-component.php';
 
 function enqueue_custom_spreadsheet_block_script() {
     wp_enqueue_script(

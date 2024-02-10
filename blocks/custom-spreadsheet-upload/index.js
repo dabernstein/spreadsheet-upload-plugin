@@ -1,33 +1,17 @@
 const { registerBlockType } = wp.blocks;
 const { createElement, useState } = wp.element;
-const { Table, TableRow, TableCell, InspectorControls } = wp.editor;
-const { Button, Dropdown, PanelBody, SelectControl } = wp.components;
+const { InspectorControls } = wp.blockEditor;
+const { Button, Dropdown, PanelBody, SelectControl, ColorPicker } = wp.components;
 
 async function convertSpreadsheetToHTML(spreadsheetFile) {
-    //return new Promise((resolve, rejected) => {
-        console.log(spreadsheetFile);
-        
-        //Defines reader to read spreadsheet as buffer
-        //const reader = new FileReader();
+    const data = new Array(spreadsheetFile);
+    const workbook = XLSX.read(await (spreadsheetFile).arrayBuffer());
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
 
-        //Reads spreadsheet and converts to HTML
-        //reader.onload = (e) => {
-            const data = new Array(spreadsheetFile);
-            const workbook = XLSX.read(await (spreadsheetFile).arrayBuffer());
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
+    const htmlWorksheet = XLSX.utils.sheet_to_html(worksheet);
 
-            const htmlWorksheet = XLSX.utils.sheet_to_html(worksheet);
-
-            return(htmlWorksheet);
-       // };
-
-        // reader.onerror = (error) => {
-        //     rejected(error);
-        // }
-
-        //reader.readAsArrayBuffer(spreadsheetFile);
-    //});
+    return(htmlWorksheet);
 }
 
 function parseHTMLTable(html) {
@@ -35,7 +19,6 @@ function parseHTMLTable(html) {
     const tableElement = doc.querySelector('table');
 
     if (!tableElement) {
-        //console.log('bad table');
         return [];
     }
 
@@ -47,8 +30,6 @@ function parseHTMLTable(html) {
 } 
 
 function convertTableToColumnArray(table) {
-    // const rows = parseHTMLTable(table);
-
     console.log("This is table");
     console.log(table);
 
@@ -103,9 +84,9 @@ registerBlockType('custom-spreadsheet-upload/block', {
             type: 'array',
             default: [1, 2, 3]
         },
-        swapStepList: { //Values store as [[newOrder, index], [newOrder, index]]
-            type: 'array',
-            default: []
+        headerBackgroundColor: {
+            type: 'string',
+            default: 'blue'
         }
     },
     edit: ({ attributes, setAttributes }) => {
@@ -143,6 +124,8 @@ registerBlockType('custom-spreadsheet-upload/block', {
             newItemsOrder[index] = holdHeader;
             setAttributes({ headerList: newItemsOrder });
         };
+
+        const [color, setColor] = useState();
        
         return createElement('div', null, 
             createElement('div', null, 
@@ -178,12 +161,36 @@ registerBlockType('custom-spreadsheet-upload/block', {
                         })
                     ))
                 )
-            ))
+            )),
+            createElement('div', null,
+                createElement(InspectorControls, {group: 'styles'},
+                    createElement(PanelBody, {title: 'Header Styles', initialOpen: false}, 
+                        createElement(ColorPalette, {
+                            colors: [{name: 'red', color: '#f00'}],
+                            value: color,
+                            onChange: setColor
+                        },),
+                        createElement(Button, {
+                            onClick: function () {
+                                console.log(color);
+                                setAttributes({headerBackgroundColor: color});
+                            }
+                        }, 'Set Color')
+                    )
+                )
+            )
         )
     },
     save: ({ attributes }) => {
         // Parse the HTML table content into rows and cells
         const rows = attributes.parsedTable
+
+        const headerStyle = {
+            backgroundColor: attributes.headerBackgroundColor,
+        }
+        const dataCellStyle = {
+
+        }
     
         return createElement('div', null, createElement(
             'table',
@@ -196,7 +203,7 @@ registerBlockType('custom-spreadsheet-upload/block', {
             rows.map((row, rowIndex) =>
                 createElement(
                     'tr',
-                    { key: rowIndex, className: rowIndex === 0 ? 'title-row' : null },
+                    { key: rowIndex, style: rowIndex === 0 ? headerStyle : dataCellStyle, className: rowIndex === 0 ? 'title-row' : null},
                     // Iterate over the cells in each row and create TableCell components
                     row.map((cell, cellIndex) =>
                         createElement(
