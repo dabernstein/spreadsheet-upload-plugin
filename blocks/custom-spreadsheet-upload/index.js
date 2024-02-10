@@ -1,7 +1,7 @@
 const { registerBlockType } = wp.blocks;
 const { createElement, useState } = wp.element;
 const { InspectorControls } = wp.blockEditor;
-const { Button, Dropdown, PanelBody, SelectControl, ColorPicker } = wp.components;
+const { Button, Dropdown, PanelBody, SelectControl, ColorPicker, ColorPalette, TextControl } = wp.components;
 
 async function convertSpreadsheetToHTML(spreadsheetFile) {
     const data = new Array(spreadsheetFile);
@@ -86,7 +86,15 @@ registerBlockType('custom-spreadsheet-upload/block', {
         },
         headerBackgroundColor: {
             type: 'string',
-            default: 'blue'
+            default: ''
+        },
+        headerFontSize: {
+            type: 'string',
+            default: "14"
+        },
+        bodyBackgroundColor: {
+            type: 'string',
+            default: ''
         }
     },
     edit: ({ attributes, setAttributes }) => {
@@ -125,7 +133,11 @@ registerBlockType('custom-spreadsheet-upload/block', {
             setAttributes({ headerList: newItemsOrder });
         };
 
-        const [color, setColor] = useState();
+        const [headerColor, setHeaderColor] = useState('');
+
+        const [headerFontSize, setHeaderFontSize] = useState(14);
+
+        const [bodyColor, setBodyColor] = useState('');
        
         return createElement('div', null, 
             createElement('div', null, 
@@ -164,18 +176,57 @@ registerBlockType('custom-spreadsheet-upload/block', {
             )),
             createElement('div', null,
                 createElement(InspectorControls, {group: 'styles'},
-                    createElement(PanelBody, {title: 'Header Styles', initialOpen: false}, 
-                        createElement(ColorPalette, {
-                            colors: [{name: 'red', color: '#f00'}],
-                            value: color,
-                            onChange: setColor
-                        },),
-                        createElement(Button, {
-                            onClick: function () {
-                                console.log(color);
-                                setAttributes({headerBackgroundColor: color});
-                            }
-                        }, 'Set Color')
+                    createElement(PanelBody, {title: 'Header Style', initialOpen: false}, 
+                        createElement('div', null, 
+                            createElement(ColorPalette, {
+                                value: headerColor,
+                                clearable: false,
+                                onChange: setHeaderColor
+                            },),
+                            createElement(Button, {
+                                onClick: function () {
+                                    console.log(headerColor);
+                                    setAttributes({headerBackgroundColor: headerColor});
+                                }
+                            }, 'Set Color'),
+                            createElement(Button, {
+                                onClick: function () {
+                                    setHeaderColor('');
+                                    setAttributes({headerBackgroundColor: headerColor});
+                                }
+                            }, 'Reset'),
+                        ),
+                        createElement('div', null, 
+                            createElement(TextControl, {
+                                label: 'Font Size',
+                                value: headerFontSize,
+                                onChange: function () {
+                                    setHeaderFontSize(headerFontSize);
+                                    setAttributes({headerFontSize: headerFontSize})
+                                }
+                            })
+                        )
+                    ),
+                    createElement(PanelBody, {title: 'Cell Body Styles', initialOpen: false},
+                        createElement('div', null, 
+                            createElement(ColorPalette, {
+                                value: bodyColor,
+                                clearable: false,
+                                onChange: setBodyColor
+                            },),
+                            createElement(Button, {
+                                onClick: function () {
+                                    console.log(bodyColor);
+                                    setAttributes({bodyBackgroundColor: bodyColor});
+                                }
+                            }, 'Set Color'),
+                            createElement(Button, {
+                                onClick: function () {
+                                    setBodyColor('');
+                                    setAttributes({bodyBackgroundColor: bodyColor});
+                                }
+                            }, 'Reset'),
+                        ),
                     )
                 )
             )
@@ -187,9 +238,10 @@ registerBlockType('custom-spreadsheet-upload/block', {
 
         const headerStyle = {
             backgroundColor: attributes.headerBackgroundColor,
+            fontSize: attributes.headerFontSize + 'px'
         }
         const dataCellStyle = {
-
+            backgroundColor: attributes.bodyBackgroundColor
         }
     
         return createElement('div', null, createElement(
