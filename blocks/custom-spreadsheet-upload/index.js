@@ -133,11 +133,15 @@ registerBlockType('custom-spreadsheet-upload/block', {
             setAttributes({ headerList: newItemsOrder });
         };
 
-        const [headerColor, setHeaderColor] = useState('');
+        function setHeaderColor(event) {
+            setAttributes({headerBackgroundColor: event});
+        }
 
         const [headerFontSize, setHeaderFontSize] = useState(14);
 
-        const [bodyColor, setBodyColor] = useState('');
+        function setBodyColor(event) {
+            setAttributes({bodyBackgroundColor: event});
+        }
        
         return createElement('div', null, 
             createElement('div', null, 
@@ -179,22 +183,9 @@ registerBlockType('custom-spreadsheet-upload/block', {
                     createElement(PanelBody, {title: 'Header Style', initialOpen: false}, 
                         createElement('div', null, 
                             createElement(ColorPalette, {
-                                value: headerColor,
-                                clearable: false,
+                                value: attributes.headerBackgroundColor,
                                 onChange: setHeaderColor
                             },),
-                            createElement(Button, {
-                                onClick: function () {
-                                    console.log(headerColor);
-                                    setAttributes({headerBackgroundColor: headerColor});
-                                }
-                            }, 'Set Color'),
-                            createElement(Button, {
-                                onClick: function () {
-                                    setHeaderColor('');
-                                    setAttributes({headerBackgroundColor: headerColor});
-                                }
-                            }, 'Reset'),
                         ),
                         createElement('div', null, 
                             createElement(TextControl, {
@@ -210,22 +201,9 @@ registerBlockType('custom-spreadsheet-upload/block', {
                     createElement(PanelBody, {title: 'Cell Body Styles', initialOpen: false},
                         createElement('div', null, 
                             createElement(ColorPalette, {
-                                value: bodyColor,
-                                clearable: false,
+                                value: attributes.bodyBackgroundColor,
                                 onChange: setBodyColor
-                            },),
-                            createElement(Button, {
-                                onClick: function () {
-                                    console.log(bodyColor);
-                                    setAttributes({bodyBackgroundColor: bodyColor});
-                                }
-                            }, 'Set Color'),
-                            createElement(Button, {
-                                onClick: function () {
-                                    setBodyColor('');
-                                    setAttributes({bodyBackgroundColor: bodyColor});
-                                }
-                            }, 'Reset'),
+                            },)
                         ),
                     )
                 )
@@ -248,7 +226,7 @@ registerBlockType('custom-spreadsheet-upload/block', {
             'table',
             {
                 style: {  },
-                className: 'spreadsheet-table',
+                className: 'spreadsheet-table sortableTable',
             },
             createElement('tbody', null, 
             // Iterate over the parsed rows and create TableRow components
@@ -259,7 +237,7 @@ registerBlockType('custom-spreadsheet-upload/block', {
                     // Iterate over the cells in each row and create TableCell components
                     row.map((cell, cellIndex) =>
                         createElement(
-                            'td',
+                            rowIndex === 0 ? 'th' : 'td',
                             { key: cellIndex, className: 'column-' + (cellIndex+1) },
                             // The content of each cell
                             cell

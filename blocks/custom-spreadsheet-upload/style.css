@@ -6,7 +6,7 @@
     font-size: 12px;
 }
 
-table.spreadsheet-table, .spreadsheet-table tr, .spreadsheet-table td{
+table.spreadsheet-table, .spreadsheet-table tr, .spreadsheet-table th, .spreadsheet-table td{
     border: 1px solid;
 }
 
