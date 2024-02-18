@@ -69,10 +69,10 @@ registerBlockType('custom-spreadsheet-upload/block', {
     icon: 'menu',
     category: 'common',
     attributes: {
-        htmlSpreadsheetData: {
+        htmlSpreadsheetData: { //HTML attribute for storing converted spreadsheet to html (This probably can be removed)
             type: 'string'
         },
-        parsedTable: {
+        parsedTable: { //Parsed table attribute stored
             type: 'array',
             default: []
         },
@@ -142,7 +142,8 @@ registerBlockType('custom-spreadsheet-upload/block', {
         function setBodyColor(event) {
             setAttributes({bodyBackgroundColor: event});
         }
-       
+
+        //Edit return statment for the admin view
         return createElement('div', null, 
             createElement('div', null, 
                 createElement('input', {
@@ -210,6 +211,8 @@ registerBlockType('custom-spreadsheet-upload/block', {
             )
         )
     },
+
+    //Save return statement for the front-end view
     save: ({ attributes }) => {
         // Parse the HTML table content into rows and cells
         const rows = attributes.parsedTable

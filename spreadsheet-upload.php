@@ -8,6 +8,10 @@ Author: Daniel Bernstein
 
 //Adding main component file
 
+require_once plugin_dir_path(__FILE__). 'includes/custom-fields.php';
+
+require_once plugin_dir_path(__FILE__). 'includes/admin-menu.php';
+
 function enqueue_custom_spreadsheet_block_script() {
     wp_enqueue_script(
         'custom-spreadsheet-block-script',
