@@ -242,8 +242,8 @@ registerBlockType('custom-spreadsheet-upload/block', {
                         createElement(
                             rowIndex === 0 ? 'th' : 'td',
                             { key: cellIndex, className: 'column-' + (cellIndex+1) },
-                            // The content of each cell
-                            cell
+                            // The content of each cell<span class="dashicons dashicons-arrow-up"></span>
+                            cell, rowIndex === 0 ? createElement('span', {className: 'dashicons dashicons-sort'}) : null
                         )
                     )
                 )

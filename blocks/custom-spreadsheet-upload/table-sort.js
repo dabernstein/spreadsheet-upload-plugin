@@ -8,6 +8,8 @@
     
         // Object to store the current sorting order for each column
         const sortingOrders = {};
+
+        var previousHeader = null;
     
         tableHeaders.forEach(function (header, columnIndex) {
             header.addEventListener('click', function () {
@@ -53,7 +55,32 @@
 
                 // Append the new tbody to the table
                 table.appendChild(newTbody);
-    
+
+                //Swap caret icon
+                if (header.firstElementChild.classList.contains('dashicons-sort')) {
+                    header.firstElementChild.classList.remove('dashicons-sort');
+                    header.firstElementChild.classList.add('dashicons-arrow-up');
+                }
+                else if (header.firstElementChild.classList.contains('dashicons-arrow-down')){
+                    header.firstElementChild.classList.remove('dashicons-arrow-down');
+                    header.firstElementChild.classList.add('dashicons-arrow-up');
+                } 
+                else {
+                    header.firstElementChild.classList.remove('dashicons-arrow-up');
+                    header.firstElementChild.classList.add('dashicons-arrow-down');
+                }
+
+                // If previous header is assigned and isn't the current header then reset caret
+                if (previousHeader != header && previousHeader != null) {
+                    previousHeader.firstElementChild.classList.remove('dashicons-arrow-down');
+                    previousHeader.firstElementChild.classList.remove('dashicons-arrow-up');
+                    previousHeader.firstElementChild.classList.add('dashicons-sort');
+                }
+
+                // Setting previousHeader to previous header for reseting caret
+                previousHeader = header;
+                
+
                 // Append the header row to the table
                 //table.insertBefore(headerRow, table.firstChild);
             });
