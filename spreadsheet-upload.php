@@ -2,12 +2,13 @@
 /*
 Plugin Name: Spreadsheet Upload
 Description: Allows you to upload a spreadsheet into a component on your page and set definitions for the headers.
-Version: 1.0
+Version: 1.5
 Author: Daniel Bernstein
 */
 
 //Adding main component file
-require_once plugin_dir_path( __FILE__ ) . 'components/spreadsheet-component.php';
+
+require_once plugin_dir_path(__FILE__). 'includes/admin-menu.php';
 
 function enqueue_custom_spreadsheet_block_script() {
     wp_enqueue_script(
@@ -26,6 +27,18 @@ function enqueue_custom_spreadsheet_block_script() {
 }
 
 add_action( 'enqueue_block_editor_assets', 'enqueue_custom_spreadsheet_block_script' );
+
+function enqueue_custom_table_sort_script() {
+    wp_enqueue_script( 
+        'custom-table-sort-script', 
+        plugins_url('/blocks/custom-spreadsheet-upload/table-sort.js', __FILE__), 
+        array('jquery'), 
+        '1.0', 
+        true 
+    );
+}
+
+add_action( "wp_enqueue_scripts", "enqueue_custom_table_sort_script" );
 
 function enqueue_custom_spreadsheet_styles() {
     wp_enqueue_style(
