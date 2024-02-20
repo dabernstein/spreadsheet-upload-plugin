@@ -31,9 +31,18 @@ function custom_menu_page() {
             // Check if form is submitted
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Process form data here
+                $field0 = $_POST['fields0'];
+                $field1 = $_POST['fields1'];
+                $field2 = $_POST['fields2'];
+                $field3 = $_POST['fields3'];
 
-                // Example: Save fields to the database
-                $fields = $_POST['fields'];
+                // Save the fields to the database
+                $fields = array();
+                for ($i = 0; $i < count($field0); $i++) {
+                    $fields[] = array($field0[$i], $field1[$i], $field2[$i], $field3[$i]);
+                }
+
+                //$fields[] = [$_POST['fields0'], $_POST['fields1'], $_POST['fields2'], $_POST['fields3']];
                 update_option('custom_fields', $fields);
 
                 echo '<div class="updated"><p>Fields saved successfully!</p></div>';
@@ -41,6 +50,10 @@ function custom_menu_page() {
 
             // Retrieve existing fields from the database
             $existing_fields = get_option('custom_fields', array());
+
+            print_r($existing_fields);
+
+            
 
             $labelNames = ['Header', 'Short Title', 'Title', 'Description'];
 
@@ -50,12 +63,12 @@ function custom_menu_page() {
             <table class="form-table">
                 <?php
                 // Generate input fields dynamically in groups of 4
-                for ($i = 0; $i < count($existing_fields); $i += 4) {
+                for ($i = 0; $i < count($existing_fields); $i++) {
                     echo '<tr valign="top">';
                     for ($j = 0; $j < 4; $j++) {
-                        $index = $i + $j;
+                        //$index = $i + $j;
                         echo '<th scope="row"> ' . ($labelNames[$j]) . '</th>';
-                        echo '<td><input type="text" name="fields[]" value="' . esc_attr($existing_fields[$index] ?? '') . '"></td>';
+                        echo '<td><input type="text" name="fields'.$j.'[]" value="' . $existing_fields[$i][$j] . '"></td>';
                     }
                     echo '</tr>';
                 }
@@ -77,9 +90,9 @@ function custom_menu_page() {
                 var newRow = table.insertRow(table.rows.length - 1); // Insert before the last row (before the submit button)
                 for (var i = 0; i < 4; i++) {
                     var cell = newRow.insertCell(i * 2);
-                    cell.innerHTML = '<th scope="row">Field ' + (labelNames[i]) + '</th>';
+                    cell.innerHTML = '<th scope="row">' + (labelNames[i]) + '</th>';
                     cell = newRow.insertCell(i * 2 + 1);
-                    cell.innerHTML = '<td><input type="text" name="fields[]" value=""></td>';
+                    cell.innerHTML = '<td><input type="text" name="fields' + i + '[]" value=""></td>';
                 }
             });
         </script>
