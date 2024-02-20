@@ -1,33 +1,33 @@
 const { registerBlockType } = wp.blocks;
-const { createElement } = wp.element;
-const { Table, TableRow, TableCell } = wp.editor;
-const { Button } = wp.components;
+const { createElement, useState } = wp.element;
+const { Table, TableRow, TableCell, InspectorControls } = wp.editor;
+const { Button, Dropdown, PanelBody, SelectControl } = wp.components;
 
-function convertSpreadsheetToHTML(spreadsheetFile) {
-    return new Promise((resolve, rejected) => {
+async function convertSpreadsheetToHTML(spreadsheetFile) {
+    //return new Promise((resolve, rejected) => {
         console.log(spreadsheetFile);
         
         //Defines reader to read spreadsheet as buffer
-        const reader = new FileReader();
+        //const reader = new FileReader();
 
         //Reads spreadsheet and converts to HTML
-        reader.onload = (e) => {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
+        //reader.onload = (e) => {
+            const data = new Array(spreadsheetFile);
+            const workbook = XLSX.read(await (spreadsheetFile).arrayBuffer());
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
 
             const htmlWorksheet = XLSX.utils.sheet_to_html(worksheet);
 
-            resolve(htmlWorksheet);
-        };
+            return(htmlWorksheet);
+       // };
 
-        reader.onerror = (error) => {
-            rejected(error);
-        }
+        // reader.onerror = (error) => {
+        //     rejected(error);
+        // }
 
-        reader.readAsArrayBuffer(spreadsheetFile);
-    });
+        //reader.readAsArrayBuffer(spreadsheetFile);
+    //});
 }
 
 function parseHTMLTable(html) {
@@ -40,18 +40,48 @@ function parseHTMLTable(html) {
     }
 
     const rows = Array.from(tableElement.querySelectorAll('tr'));
-
-    return rows.map((row) =>
+    
+    return Array.from(rows, (row) =>
         Array.from(row.querySelectorAll('td, th')).map((cell) => cell.innerHTML)
     );
 } 
 
-function pullTableElement(html) {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    return doc.querySelector('table');
+function convertTableToColumnArray(table) {
+    // const rows = parseHTMLTable(table);
+
+    console.log("This is table");
+    console.log(table);
+
+    var columnArray = table[0].map((_, colIndex) => table.map(row => row[colIndex]));;
+
+    return columnArray;
 }
 
+//Converts array back into table from column
+function convertTableToRowArray(table) {
+    console.log("This is table");
+    console.log(table);
 
+    var columnArray = table[0].map((_, colIndex) => table.map(row => row[colIndex]));;
+
+    return columnArray;
+}
+
+//Example newOrderArray = {[name, 2], [name, 3]}
+function tableArrayReorder(currentTableColumnArray, newOrderHeaderArray) {
+    var newArrayOrder = [];
+    newOrderHeaderArray.map((header, index) => {
+        for (i = 0; i < currentTableColumnArray.length; i++) {
+            if (currentTableColumnArray[i][0] === header) {
+                newArrayOrder.push(currentTableColumnArray[i])
+                break
+            }
+        }
+    }
+    );
+
+    return convertTableToRowArray(newArrayOrder);
+}
 
 registerBlockType('custom-spreadsheet-upload/block', {
     title: 'Custom Spreadsheet',
@@ -61,25 +91,59 @@ registerBlockType('custom-spreadsheet-upload/block', {
         htmlSpreadsheetData: {
             type: 'string'
         },
-        tableData: {
-            type: 'string'
+        parsedTable: {
+            type: 'array',
+            default: []
+        },
+        fileUploaded: {
+            type: 'boolean',
+            default: false
+        },
+        headerList: {
+            type: 'array',
+            default: [1, 2, 3]
+        },
+        swapStepList: { //Values store as [[newOrder, index], [newOrder, index]]
+            type: 'array',
+            default: []
         }
     },
     edit: ({ attributes, setAttributes }) => {
-        const onFileChange = (event) => {
+        const onFileChange = async (event) => {
             const file = event.target.files[0];
 
-            convertSpreadsheetToHTML(file)
-                .then((htmlString) => {
-                    setAttributes({htmlSpreadsheetData: htmlString});
-                })
-                .catch((error) => {
-                    console.log(error);
-                })
+            const htmlString = await convertSpreadsheetToHTML(file)
+            
+            setAttributes({htmlSpreadsheetData: htmlString});
 
-            setAttributes({tableData: pullTableElement(attributes.htmlSpreadsheetData)});
+            const parsedTable = parseHTMLTable(htmlString);
+
+            setAttributes({headerList: parsedTable[0]});
+            setAttributes({parsedTable: parsedTable});
+            setAttributes({fileUploaded: true});
         };
 
+        const [isReordering, setIsReordering] = useState(false);
+
+        const onReorderClick = () => {
+            setIsReordering(!isReordering);
+            
+            if (isReordering) {
+                console.log('Closed');
+                const newTableOrder = tableArrayReorder(convertTableToColumnArray(attributes.parsedTable), attributes.headerList);
+                setAttributes({parsedTable: newTableOrder});
+            }
+        };
+
+        const onItemOrderChange = (newOrder, index) => {
+            const newItemsOrder = [...attributes.headerList];
+            const holdHeader = newItemsOrder[newOrder - 1];
+
+            newItemsOrder[newOrder - 1] = newItemsOrder[index];
+            newItemsOrder[index] = holdHeader;
+            setAttributes({ headerList: newItemsOrder });
+        };
+       
         return createElement('div', null, 
             createElement('div', null, 
                 createElement('input', {
@@ -89,20 +153,42 @@ registerBlockType('custom-spreadsheet-upload/block', {
                 }),
                 createElement(Button, {
                     onClick: function () {
-                        console.log(attributes.tableData);
+                        console.log(attributes.parsedTable);
                     },
                 }, 'Log Parsed Data'),
-            )
+            ),
+            createElement('div', null, 
+            createElement(InspectorControls, null,
+                createElement(PanelBody, { title: 'Block Settings', initialOpen: true },
+                    createElement(Button, {
+                        onClick: onReorderClick,
+                    }, isReordering ? 'Close Reorder Table' : 'Open Reorder Table'),
+                    isReordering &&
+                    attributes.headerList.map((item, index) => (
+                        createElement(SelectControl, {
+                            key: index,
+                            label: `Order for ${item}`,
+                            //value: 0,
+                            value: index + 1,  // Starting from 1
+                            options: Array.from({ length: attributes.headerList.length }, (_, i) => ({
+                                label: `${i + 1}`,
+                                value: i + 1,
+                            })),
+                            onChange: (newOrder) => onItemOrderChange(newOrder, index),
+                        })
+                    ))
+                )
+            ))
         )
     },
     save: ({ attributes }) => {
         // Parse the HTML table content into rows and cells
-        const rows = parseHTMLTable(attributes.htmlSpreadsheetData);
+        const rows = attributes.parsedTable
     
         return createElement('div', null, createElement(
             'table',
             {
-                style: { textAlign: attributes.alignment },
+                style: {  },
                 className: 'spreadsheet-table',
             },
             createElement('tbody', null, 
