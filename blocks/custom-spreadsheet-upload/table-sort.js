@@ -56,25 +56,26 @@
                 // Append the new tbody to the table
                 table.appendChild(newTbody);
 
+                // Need to change firstElementChild to shorter code
                 //Swap caret icon
-                if (header.firstElementChild.classList.contains('dashicons-sort')) {
-                    header.firstElementChild.classList.remove('dashicons-sort');
-                    header.firstElementChild.classList.add('dashicons-arrow-up');
+                if (header.firstElementChild.firstElementChild.classList.contains('dashicons-sort')) {
+                    header.firstElementChild.firstElementChild.classList.remove('dashicons-sort');
+                    header.firstElementChild.firstElementChild.classList.add('dashicons-arrow-up');
                 }
-                else if (header.firstElementChild.classList.contains('dashicons-arrow-down')){
-                    header.firstElementChild.classList.remove('dashicons-arrow-down');
-                    header.firstElementChild.classList.add('dashicons-arrow-up');
+                else if (header.firstElementChild.firstElementChild.classList.contains('dashicons-arrow-down')){
+                    header.firstElementChild.firstElementChild.classList.remove('dashicons-arrow-down');
+                    header.firstElementChild.firstElementChild.classList.add('dashicons-arrow-up');
                 } 
                 else {
-                    header.firstElementChild.classList.remove('dashicons-arrow-up');
-                    header.firstElementChild.classList.add('dashicons-arrow-down');
+                    header.firstElementChild.firstElementChild.classList.remove('dashicons-arrow-up');
+                    header.firstElementChild.firstElementChild.classList.add('dashicons-arrow-down');
                 }
 
                 // If previous header is assigned and isn't the current header then reset caret
                 if (previousHeader != header && previousHeader != null) {
-                    previousHeader.firstElementChild.classList.remove('dashicons-arrow-down');
-                    previousHeader.firstElementChild.classList.remove('dashicons-arrow-up');
-                    previousHeader.firstElementChild.classList.add('dashicons-sort');
+                    previousHeader.firstElementChild.firstElementChild.classList.remove('dashicons-arrow-down');
+                    previousHeader.firstElementChild.firstElementChild.classList.remove('dashicons-arrow-up');
+                    previousHeader.firstElementChild.firstElementChild.classList.add('dashicons-sort');
                 }
 
                 // Setting previousHeader to previous header for reseting caret
