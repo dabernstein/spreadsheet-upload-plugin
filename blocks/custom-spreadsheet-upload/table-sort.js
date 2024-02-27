@@ -7,7 +7,7 @@
         const tableHeaders = document.querySelectorAll('.spreadsheet-table th');
     
         // Object to store the current sorting order for each column
-        const sortingOrders = {};
+        var sortingOrders = {};
 
         var previousHeader = null;
 
@@ -18,8 +18,6 @@
     
         tableHeaders.forEach(function (header, columnIndex) {
             header.addEventListener('click', function () {
-
-                console.log(customFields);
 
                 // Get the table element
                 const table = document.querySelector('.spreadsheet-table');
@@ -34,6 +32,11 @@
     
                 // Get all rows except the header row
                 const rows = Array.from(table.querySelectorAll('tbody tr'));
+
+                // Resets the sortingOrders object if the header is different
+                if (header != previousHeader) {
+                    sortingOrders = {};
+                }
     
                 // Get the current sorting order for the column
                 const currentOrder = sortingOrders[columnIndex] || 'asc';
