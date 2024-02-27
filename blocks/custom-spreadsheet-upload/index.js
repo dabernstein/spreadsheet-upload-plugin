@@ -64,6 +64,39 @@ function tableArrayReorder(currentTableColumnArray, newOrderHeaderArray) {
     return convertTableToRowArray(newArrayOrder);
 }
 
+// Converts table headers to short header
+function headerShortHand(tableHeaders) {
+    if (customFields != null) {
+        tableHeaders.map((header, index) => {
+            for (i = 0; i < customFields.length; i++) {
+                if (header === customFields[i][0]) {
+                    tableHeaders[index] = customFields[i][1];
+                }
+            }
+        });
+        return tableHeaders;
+    }
+    else {
+        return tableHeaders;
+    }
+}
+
+// Assigns table header a title for a description of the column
+function headerDescription(header) {
+    //console.log('ran');
+    if (customFields != null) {
+        for (i = 0; i < customFields.length; i++) {
+            if (header === customFields[i][1] || header === customFields[i][0]) {
+                return customFields[i][3];
+            }
+        };
+        return null;
+    }
+    else {
+        return null;
+    }
+}
+
 registerBlockType('custom-spreadsheet-upload/block', {
     title: 'Custom Spreadsheet',
     icon: 'menu',
@@ -106,6 +139,8 @@ registerBlockType('custom-spreadsheet-upload/block', {
             setAttributes({htmlSpreadsheetData: htmlString});
 
             const parsedTable = parseHTMLTable(htmlString);
+
+            console.log(headerShortHand(parsedTable[0]));
 
             setAttributes({headerList: parsedTable[0]});
             setAttributes({parsedTable: parsedTable});
@@ -241,9 +276,8 @@ registerBlockType('custom-spreadsheet-upload/block', {
                     row.map((cell, cellIndex) =>
                         createElement(
                             rowIndex === 0 ? 'th' : 'td',
-                            { key: cellIndex, className: 'column-' + (cellIndex+1) },
-                            // The content of each cell<span class="dashicons dashicons-arrow-up"></span>
-                            cell, rowIndex === 0 ? createElement('span', {className: 'dashicons dashicons-sort'}) : null
+                            { key: cellIndex, className: 'column-' + (cellIndex+1), title: rowIndex === 0 ? headerDescription(cell) : null},
+                            rowIndex === 0 ? createElement('div', {className: 'cell-content'}, createElement('div', {className: 'cell'}, cell), createElement('span', {className: 'dashicons dashicons-sort sort-icon'})) : cell
                         )
                     )
                 )

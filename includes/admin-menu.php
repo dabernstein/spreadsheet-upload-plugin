@@ -21,6 +21,40 @@ add_action('admin_menu', 'custom_admin_menu');
 // Callback function for the custom menu page
 function custom_menu_page() {
     ?>
+    <style>
+        .form-table {
+            display: flex;
+            flex-direction: column;
+        }
+        .field-container {
+            display: flex;
+            flex-direction: column;
+            max-width: fit-content;
+            margin-bottom: 40px;
+        }
+        .top-form {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 15px;
+        }
+        .bottom-form {
+            display: flex;
+            flex-direction: column;
+        }
+        .bottom-form textarea {
+            width: 100%;
+            height: 100px;
+        }
+        .field-row {
+            display: flex;
+            flex-direction: row;
+        }
+        .form-titles {
+            display: flex;
+            flex-direction: row;
+
+        }
+    </style>
     <div class="wrap">
         <h2>Custom Fields</h2>
 
@@ -51,29 +85,29 @@ function custom_menu_page() {
             // Retrieve existing fields from the database
             $existing_fields = get_option('custom_fields', array());
 
-            print_r($existing_fields);
-
-            
-
-            $labelNames = ['Header', 'Short Title', 'Title', 'Description'];
+            $labelNames = ['Spreadsheet Header', 'Short Title', 'Full Title', 'Description'];
 
             // Display form for adding/modifying fields
             ?>
             <h3>Add or Modify Fields</h3>
-            <table class="form-table">
-                <?php
-                // Generate input fields dynamically in groups of 4
-                for ($i = 0; $i < count($existing_fields); $i++) {
-                    echo '<tr valign="top">';
-                    for ($j = 0; $j < 4; $j++) {
-                        //$index = $i + $j;
-                        echo '<th scope="row"> ' . ($labelNames[$j]) . '</th>';
-                        echo '<td><input type="text" name="fields'.$j.'[]" value="' . $existing_fields[$i][$j] . '"></td>';
-                    }
-                    echo '</tr>';
-                }
-                ?>
-            </table>
+            <div class="form-table">
+                <?php for ($i = 0; $i < count($existing_fields); $i++) { ?>
+                    <div class="field-container">
+                        <div class="top-form">
+                            <?php for ($j = 0; $j < 3; $j++) { ?>
+                                <div class="field-input">
+                                    <div><strong> <?php echo $labelNames[$j] ?> </strong></div>
+                                    <div><input type="text" name="fields<?php echo $j ?>[]" value="<?php echo $existing_fields[$i][$j] ?>"></div>
+                                </div>
+                            <?php } ?>
+                        </div>
+                        <div class="bottom-form">
+                            <div><strong> <?php echo $labelNames[3] ?> </strong></div>
+                            <div><textarea name="fields<?php echo $j ?>[]"> <?php echo $existing_fields[$i][3] ?> </textarea></div>
+                        </div>
+                    </div>
+                <?php } ?>
+            </div>
 
             <!-- Allow the addition of a new group -->
             <p><a href="#" id="add-group">Add Another Group</a></p>
@@ -82,18 +116,32 @@ function custom_menu_page() {
         </form>
 
         <script>
-            const labelNames = ['Header', 'Short Title', 'Title', 'Description'];
             // JavaScript to handle adding a new group of fields
             document.getElementById('add-group').addEventListener('click', function (e) {
                 e.preventDefault();
                 var table = document.querySelector('.form-table');
-                var newRow = table.insertRow(table.rows.length - 1); // Insert before the last row (before the submit button)
-                for (var i = 0; i < 4; i++) {
-                    var cell = newRow.insertCell(i * 2);
-                    cell.innerHTML = '<th scope="row">' + (labelNames[i]) + '</th>';
-                    cell = newRow.insertCell(i * 2 + 1);
-                    cell.innerHTML = '<td><input type="text" name="fields' + i + '[]" value=""></td>';
-                }
+                var newForm = 
+                    '<div class="field-container">' +
+                    '<div class="top-form">' +
+                    '<div class="field-input">' +
+                    '<div><strong>Spreadsheet Header</strong></div>' +
+                    '<div><input type="text" name="fields0[]" value=""></div>' +
+                    '</div>' +
+                    '<div class="field-input">' +
+                    '<div><strong>Short Title</strong></div>' +
+                    '<div><input type="text" name="fields1[]" value=""></div>' +
+                    '</div>' +
+                    '<div class="field-input">' +
+                    '<div><strong>Full Title</strong></div>' +
+                    '<div><input type="text" name="fields2[]" value=""></div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="bottom-form">' +
+                    '<div><strong>Description</strong></div>' +
+                    '<div><textarea name="fields3[]"></textarea></div>' +
+                    '</div>' +
+                    '</div>'
+                table.insertAdjacentHTML('beforeend', newForm);
             });
         </script>
     </div>

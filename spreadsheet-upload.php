@@ -2,7 +2,7 @@
 /*
 Plugin Name: Spreadsheet Upload
 Description: Allows you to upload a spreadsheet into a component on your page and set definitions for the headers.
-Version: 1.5
+Version: 1.7.6
 Author: Daniel Bernstein
 */
 
@@ -18,10 +18,16 @@ function enqueue_custom_spreadsheet_block_script() {
         '1.0',
         true
     );
+    $custom_fields = get_option('custom_fields', array());
+    wp_localize_script(
+        'custom-spreadsheet-block-script',
+        'customFields',
+        $custom_fields
+    );
     wp_enqueue_script(
         'xlsx-library',
         plugins_url('/blocks/custom-spreadsheet-upload/lib/xlsx.full.min.js', __FILE__),
-        1.0,
+        '1.0',
         true
     );
 }
@@ -35,6 +41,12 @@ function enqueue_custom_table_sort_script() {
         array('jquery'), 
         '1.0', 
         true 
+    );
+    $custom_fields = get_option('custom_fields', array());
+    wp_localize_script(
+        'custom-table-sort-script',
+        'customFields',
+        $custom_fields
     );
 }
 

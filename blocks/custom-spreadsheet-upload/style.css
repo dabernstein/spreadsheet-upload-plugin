@@ -13,3 +13,16 @@ table.spreadsheet-table, .spreadsheet-table tr, .spreadsheet-table th, .spreadsh
 .title-row {
     font-weight: bold;
 }
+
+.title-row th {
+    cursor: pointer;
+}
+
+th .cell-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.sort-icon {
+    align-self: center;
+}
