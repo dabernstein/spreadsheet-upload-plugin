@@ -10,9 +10,17 @@
         const sortingOrders = {};
 
         var previousHeader = null;
+
+        var previousHeaderTitle = null;
+        var previousHeaderTitleHolder = null;
+
+        
     
         tableHeaders.forEach(function (header, columnIndex) {
             header.addEventListener('click', function () {
+
+                console.log(customFields);
+
                 // Get the table element
                 const table = document.querySelector('.spreadsheet-table');
     
@@ -56,30 +64,45 @@
                 // Append the new tbody to the table
                 table.appendChild(newTbody);
 
+                customFields.forEach(function (field, index) {
+                    if (field[1] == header.lastElementChild.innerText.trim()) {
+                        previousHeaderTitleHolder = header.querySelector('.cell').textContent;
+                        header.querySelector('.cell').textContent = field[2];
+                    }
+                    else if (previousHeaderTitleHolder == previousHeaderTitle){
+                        previousHeaderTitleHolder = '';
+                    }
+                })
+
                 // Need to change firstElementChild to shorter code
                 //Swap caret icon
-                if (header.firstElementChild.firstElementChild.classList.contains('dashicons-sort')) {
-                    header.firstElementChild.firstElementChild.classList.remove('dashicons-sort');
-                    header.firstElementChild.firstElementChild.classList.add('dashicons-arrow-up');
+                if (header.firstElementChild.lastElementChild.classList.contains('dashicons-sort')) {
+                    header.firstElementChild.lastElementChild.classList.remove('dashicons-sort');
+                    header.firstElementChild.lastElementChild.classList.add('dashicons-arrow-up');
                 }
-                else if (header.firstElementChild.firstElementChild.classList.contains('dashicons-arrow-down')){
-                    header.firstElementChild.firstElementChild.classList.remove('dashicons-arrow-down');
-                    header.firstElementChild.firstElementChild.classList.add('dashicons-arrow-up');
+                else if (header.firstElementChild.lastElementChild.classList.contains('dashicons-arrow-down')){
+                    header.firstElementChild.lastElementChild.classList.remove('dashicons-arrow-down');
+                    header.firstElementChild.lastElementChild.classList.add('dashicons-arrow-up');
                 } 
                 else {
-                    header.firstElementChild.firstElementChild.classList.remove('dashicons-arrow-up');
-                    header.firstElementChild.firstElementChild.classList.add('dashicons-arrow-down');
+                    header.firstElementChild.lastElementChild.classList.remove('dashicons-arrow-up');
+                    header.firstElementChild.lastElementChild.classList.add('dashicons-arrow-down');
                 }
 
                 // If previous header is assigned and isn't the current header then reset caret
                 if (previousHeader != header && previousHeader != null) {
-                    previousHeader.firstElementChild.firstElementChild.classList.remove('dashicons-arrow-down');
-                    previousHeader.firstElementChild.firstElementChild.classList.remove('dashicons-arrow-up');
-                    previousHeader.firstElementChild.firstElementChild.classList.add('dashicons-sort');
+                    if (previousHeaderTitle != null && previousHeaderTitle != '') {
+                        previousHeader.firstElementChild.firstElementChild.textContent = previousHeaderTitle;
+                    }
+
+                    previousHeader.firstElementChild.lastElementChild.classList.remove('dashicons-arrow-down');
+                    previousHeader.firstElementChild.lastElementChild.classList.remove('dashicons-arrow-up');
+                    previousHeader.firstElementChild.lastElementChild.classList.add('dashicons-sort');
                 }
 
                 // Setting previousHeader to previous header for reseting caret
                 previousHeader = header;
+                previousHeaderTitle = previousHeaderTitleHolder;
                 
 
                 // Append the header row to the table

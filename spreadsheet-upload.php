@@ -2,7 +2,7 @@
 /*
 Plugin Name: Spreadsheet Upload
 Description: Allows you to upload a spreadsheet into a component on your page and set definitions for the headers.
-Version: 1.7.4
+Version: 1.7.6
 Author: Daniel Bernstein
 */
 
@@ -41,6 +41,12 @@ function enqueue_custom_table_sort_script() {
         array('jquery'), 
         '1.0', 
         true 
+    );
+    $custom_fields = get_option('custom_fields', array());
+    wp_localize_script(
+        'custom-table-sort-script',
+        'customFields',
+        $custom_fields
     );
 }
 
