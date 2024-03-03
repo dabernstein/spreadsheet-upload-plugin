@@ -60,6 +60,7 @@ function enqueue_custom_spreadsheet_styles() {
         '1.0',
         'all'
     );
+    wp_enqueue_style('dashicons');
 }
 add_action('enqueue_block_assets', 'enqueue_custom_spreadsheet_styles');
 ?>
