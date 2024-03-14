@@ -1,10 +1,9 @@
 const { registerBlockType } = wp.blocks;
 const { createElement, useState } = wp.element;
 const { InspectorControls } = wp.blockEditor;
-const { Button, Dropdown, PanelBody, SelectControl, ColorPicker, ColorPalette, TextControl } = wp.components;
+const { Button, Dropdown, PanelBody, SelectControl, ColorPicker, ColorPalette, TextControl, CheckboxControl } = wp.components;
 
 async function convertSpreadsheetToHTML(spreadsheetFile) {
-    const data = new Array(spreadsheetFile);
     const workbook = XLSX.read(await (spreadsheetFile).arrayBuffer());
     const firstSheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[firstSheetName];
@@ -113,9 +112,13 @@ registerBlockType('custom-spreadsheet-upload/block', {
             type: 'boolean',
             default: false
         },
+        checkedColumnList: {
+            type: 'array',
+            default: null
+        },
         headerList: {
             type: 'array',
-            default: [1, 2, 3]
+            default: []
         },
         headerBackgroundColor: {
             type: 'string',
@@ -147,6 +150,7 @@ registerBlockType('custom-spreadsheet-upload/block', {
             setAttributes({fileUploaded: true});
         };
 
+        // Reorder Table Set Values
         const [isReordering, setIsReordering] = useState(false);
 
         const onReorderClick = () => {
@@ -159,6 +163,7 @@ registerBlockType('custom-spreadsheet-upload/block', {
             }
         };
 
+        // Reorder Function for Table
         const onItemOrderChange = (newOrder, index) => {
             const newItemsOrder = [...attributes.headerList];
             const holdHeader = newItemsOrder[newOrder - 1];
@@ -167,6 +172,31 @@ registerBlockType('custom-spreadsheet-upload/block', {
             newItemsOrder[index] = holdHeader;
             setAttributes({ headerList: newItemsOrder });
         };
+
+        // Hide Columns Set Values
+        const [isHiding, setIsHiding] = useState(false);
+
+        const onHideClick = () => {
+            setIsHiding(!isHiding);
+
+            if (isHiding) {
+                console.log(isCheckedColumn);
+                setAttributes({checkedColumnList: isCheckedColumn});
+            }
+        }
+
+        // Checkbox Funtion for Hide Columns
+        const [isCheckedColumn, setIsCheckedColumn] = useState(
+           attributes.checkedColumnList == null ? Array(attributes.headerList.length).fill(false) : attributes.checkedColumnList
+        );
+
+        const onCheckedColumn = (position) => {
+            const updatedCheckedColumn = isCheckedColumn.map((item, index) => 
+                index === position ? !item : item
+            );
+
+            setIsCheckedColumn(updatedCheckedColumn);
+        }
 
         function setHeaderColor(event) {
             setAttributes({headerBackgroundColor: event});
@@ -178,7 +208,7 @@ registerBlockType('custom-spreadsheet-upload/block', {
             setAttributes({bodyBackgroundColor: event});
         }
 
-        //Edit return statment for the admin view
+        // Edit return statment for the admin view
         return createElement('div', null, 
             createElement('div', null, 
                 createElement('input', {
@@ -192,8 +222,10 @@ registerBlockType('custom-spreadsheet-upload/block', {
                     },
                 }, 'Log Parsed Data'),
             ),
+            // Block Settings
             createElement('div', null, 
             createElement(InspectorControls, null,
+                // Reorder Table
                 createElement(PanelBody, { title: 'Block Settings', initialOpen: true },
                     createElement(Button, {
                         onClick: onReorderClick,
@@ -203,7 +235,6 @@ registerBlockType('custom-spreadsheet-upload/block', {
                         createElement(SelectControl, {
                             key: index,
                             label: `Order for ${item}`,
-                            //value: 0,
                             value: index + 1,  // Starting from 1
                             options: Array.from({ length: attributes.headerList.length }, (_, i) => ({
                                 label: `${i + 1}`,
@@ -211,9 +242,23 @@ registerBlockType('custom-spreadsheet-upload/block', {
                             })),
                             onChange: (newOrder) => onItemOrderChange(newOrder, index),
                         })
+                    )),
+                    // Hide Columns
+                    createElement(Button, {
+                        onClick: onHideClick,
+                    }, isHiding ? 'Set Column Visibility' : 'Open Hide Columns'),
+                    isHiding &&
+                    attributes.headerList.map((item, index) => (
+                        createElement(CheckboxControl, {
+                            key: index,
+                            label: item,
+                            checked: isCheckedColumn[index],
+                            onChange: () => onCheckedColumn(index),
+                        })
                     ))
                 )
             )),
+            // Style Settings
             createElement('div', null,
                 createElement(InspectorControls, {group: 'styles'},
                     createElement(PanelBody, {title: 'Header Style', initialOpen: false}, 
@@ -274,14 +319,14 @@ registerBlockType('custom-spreadsheet-upload/block', {
                     { key: rowIndex, style: rowIndex === 0 ? headerStyle : dataCellStyle, className: rowIndex === 0 ? 'title-row' : null},
                     // Iterate over the cells in each row and create TableCell components
                     row.map((cell, cellIndex) =>
-                        createElement(
+                        !attributes.checkedColumnList[cellIndex] ? createElement(
                             rowIndex === 0 ? 'th' : 'td',
                             { key: cellIndex, className: 'column-' + (cellIndex+1), title: rowIndex === 0 ? headerDescription(cell) : null},
                             rowIndex === 0 ? createElement('div', {className: 'cell-content'}, createElement('div', {className: 'cell'}, cell), createElement('span', {className: 'dashicons dashicons-sort sort-icon'})) : cell
-                        )
-                    )
-                )
-            )
+                        ) : null
+                    ) 
+                ) 
+            ) 
         ))
     );
     },
