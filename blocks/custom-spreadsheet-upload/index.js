@@ -116,6 +116,10 @@ registerBlockType('custom-spreadsheet-upload/block', {
             type: 'array',
             default: null
         },
+        columnSpecialCharacters: {
+            type: 'array',
+            default: null
+        },
         headerList: {
             type: 'array',
             default: []
@@ -173,7 +177,7 @@ registerBlockType('custom-spreadsheet-upload/block', {
             setAttributes({ headerList: newItemsOrder });
         };
 
-        // Hide Columns Set Values
+        // Hide Columns Set Values 
         const [isHiding, setIsHiding] = useState(false);
 
         const onHideClick = () => {
@@ -196,6 +200,18 @@ registerBlockType('custom-spreadsheet-upload/block', {
             );
 
             setIsCheckedColumn(updatedCheckedColumn);
+        }
+
+        // Function for Column Special Variables
+        const [isSpecialCharacter, setIsSpecialCharacter] = useState(false);
+
+        const onSpecialClick = () => {
+            if (attributes.columnSpecialCharacters == null) {
+                const tempArray = Array(attributes.headerList.length).fill('');
+                setAttributes({columnSpecialCharacters: tempArray});
+            }
+
+            setIsSpecialCharacter(!isSpecialCharacter);
         }
 
         function setHeaderColor(event) {
@@ -255,7 +271,29 @@ registerBlockType('custom-spreadsheet-upload/block', {
                             checked: isCheckedColumn[index],
                             onChange: () => onCheckedColumn(index),
                         })
-                    ))
+                    )),
+                    // Adding special variables for columns
+                    createElement(Button, {
+                        onClick: onSpecialClick,
+                    }, isSpecialCharacter ? 'Close Special Characters' : 'Open Special Characters'),
+                    isSpecialCharacter &&
+                    createElement('div', null,
+                        attributes.headerList.map((item, index) => (
+                            createElement(TextControl, {
+                                key: index,
+                                label: item,
+                                type: 'text',
+                                value: attributes.columnSpecialCharacters[index],
+                                onChange: function (newSpecialVariable) {
+                                    if (/^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/.test(newSpecialVariable)) {
+                                        var newColumnSpecialCharacters = Array(attributes.columnSpecialCharacters);
+                                        newColumnSpecialCharacters[index] = newSpecialVariable;
+                                        setAttributes({columnSpecialCharacters: newColumnSpecialCharacters});
+                                    }
+                                }
+                            })
+                        ))
+                    )
                 )
             )),
             // Style Settings
@@ -271,10 +309,11 @@ registerBlockType('custom-spreadsheet-upload/block', {
                         createElement('div', null, 
                             createElement(TextControl, {
                                 label: 'Font Size',
+                                type: 'number',
                                 value: headerFontSize,
-                                onChange: function () {
-                                    setHeaderFontSize(headerFontSize);
-                                    setAttributes({headerFontSize: headerFontSize})
+                                onChange: function (newFontSize) {
+                                    setHeaderFontSize(newFontSize);
+                                    setAttributes({headerFontSize: newFontSize});
                                 }
                             })
                         )
@@ -316,12 +355,12 @@ registerBlockType('custom-spreadsheet-upload/block', {
             rows.map((row, rowIndex) =>
                 createElement(
                     'tr',
-                    { key: rowIndex, style: rowIndex === 0 ? headerStyle : dataCellStyle, className: rowIndex === 0 ? 'title-row' : null},
+                    { key: rowIndex, style: rowIndex === 0 ? headerStyle : dataCellStyle, className: rowIndex === 0 ? 'title-row' : null },
                     // Iterate over the cells in each row and create TableCell components
                     row.map((cell, cellIndex) =>
                         !attributes.checkedColumnList[cellIndex] ? createElement(
                             rowIndex === 0 ? 'th' : 'td',
-                            { key: cellIndex, className: 'column-' + (cellIndex+1), title: rowIndex === 0 ? headerDescription(cell) : null},
+                            { key: cellIndex, className: 'column-' + (cellIndex+1), title: rowIndex === 0 ? headerDescription(cell) : null },
                             rowIndex === 0 ? createElement('div', {className: 'cell-content'}, createElement('div', {className: 'cell'}, cell), createElement('span', {className: 'dashicons dashicons-sort sort-icon'})) : cell
                         ) : null
                     ) 
