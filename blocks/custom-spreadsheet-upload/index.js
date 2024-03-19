@@ -118,7 +118,7 @@ registerBlockType('custom-spreadsheet-upload/block', {
         },
         columnSpecialCharacters: {
             type: 'array',
-            default: null
+            default: []
         },
         headerList: {
             type: 'array',
@@ -151,6 +151,10 @@ registerBlockType('custom-spreadsheet-upload/block', {
 
             setAttributes({headerList: parsedTable[0]});
             setAttributes({parsedTable: parsedTable});
+
+            setAttributes({checkedColumnList: Array(parsedTable[0].length).fill(false)});
+            setAttributes({columnSpecialCharacters: Array(parsedTable[0].length).fill('')});
+
             setAttributes({fileUploaded: true});
         };
 
@@ -207,8 +211,7 @@ registerBlockType('custom-spreadsheet-upload/block', {
 
         const onSpecialClick = () => {
             if (attributes.columnSpecialCharacters == null) {
-                const tempArray = Array(attributes.headerList.length).fill('');
-                setAttributes({columnSpecialCharacters: tempArray});
+                setAttributes({columnSpecialCharacters: Array(attributes.headerList.length)});
             }
 
             setIsSpecialCharacter(!isSpecialCharacter);
@@ -286,10 +289,14 @@ registerBlockType('custom-spreadsheet-upload/block', {
                                 value: attributes.columnSpecialCharacters[index],
                                 onChange: function (newSpecialVariable) {
                                     if (/^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/.test(newSpecialVariable)) {
-                                        var newColumnSpecialCharacters = Array(attributes.columnSpecialCharacters);
+                                        var newColumnSpecialCharacters = attributes.columnSpecialCharacters.slice();
                                         newColumnSpecialCharacters[index] = newSpecialVariable;
                                         setAttributes({columnSpecialCharacters: newColumnSpecialCharacters});
+                                    } else {
+                                        // Handles invalid input
+                                        alert('Special characters only');
                                     }
+                                    console.log(attributes.columnSpecialCharacters);
                                 }
                             })
                         ))
@@ -343,30 +350,35 @@ registerBlockType('custom-spreadsheet-upload/block', {
         const dataCellStyle = {
             backgroundColor: attributes.bodyBackgroundColor
         }
-    
-        return createElement('div', null, createElement(
-            'table',
-            {
-                style: {  },
-                className: 'spreadsheet-table sortableTable',
-            },
-            createElement('tbody', null, 
-            // Iterate over the parsed rows and create TableRow components
-            rows.map((row, rowIndex) =>
-                createElement(
-                    'tr',
-                    { key: rowIndex, style: rowIndex === 0 ? headerStyle : dataCellStyle, className: rowIndex === 0 ? 'title-row' : null },
-                    // Iterate over the cells in each row and create TableCell components
-                    row.map((cell, cellIndex) =>
-                        !attributes.checkedColumnList[cellIndex] ? createElement(
-                            rowIndex === 0 ? 'th' : 'td',
-                            { key: cellIndex, className: 'column-' + (cellIndex+1), title: rowIndex === 0 ? headerDescription(cell) : null },
-                            rowIndex === 0 ? createElement('div', {className: 'cell-content'}, createElement('div', {className: 'cell'}, cell), createElement('span', {className: 'dashicons dashicons-sort sort-icon'})) : cell
-                        ) : null
+
+        if (!attributes.fileUploaded) {
+            return createElement('div', null, 'No file uploaded');
+        }
+        else {
+            return createElement('div', null, createElement(
+                'table',
+                {
+                    style: {  },
+                    className: 'spreadsheet-table sortableTable',
+                },
+                createElement('tbody', null, 
+                // Iterate over the parsed rows and create TableRow components
+                rows.map((row, rowIndex) =>
+                    createElement(
+                        'tr',
+                        { key: rowIndex, style: rowIndex === 0 ? headerStyle : dataCellStyle, className: rowIndex === 0 ? 'title-row' : null },
+                        // Iterate over the cells in each row and create TableCell components
+                        row.map((cell, cellIndex) =>
+                            !attributes.checkedColumnList[cellIndex] ? createElement(
+                                rowIndex === 0 ? 'th' : 'td',
+                                { key: cellIndex, className: 'column-' + (cellIndex+1), title: rowIndex === 0 ? headerDescription(cell) : null },
+                                rowIndex === 0 ? createElement('div', {className: 'cell-content'}, createElement('div', {className: 'cell'}, cell), createElement('span', {className: 'dashicons dashicons-sort sort-icon'})) : (attributes.columnSpecialCharacters[cellIndex] != '' || attributes.columnSpecialCharacters[cellIndex] != null ? (cell + attributes.columnSpecialCharacters[cellIndex]) : cell)
+                            ) : null
+                        ) 
                     ) 
                 ) 
-            ) 
-        ))
-    );
+            ))
+            );
+        }
     },
 });
