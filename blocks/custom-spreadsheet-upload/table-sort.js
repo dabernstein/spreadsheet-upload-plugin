@@ -13,8 +13,6 @@
 
         var previousHeaderTitle = null;
         var previousHeaderTitleHolder = null;
-
-        
     
         tableHeaders.forEach(function (header, columnIndex) {
             header.addEventListener('click', function () {
