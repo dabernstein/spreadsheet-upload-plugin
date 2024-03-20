@@ -132,6 +132,10 @@ registerBlockType('custom-spreadsheet-upload/block', {
             type: 'string',
             default: "14"
         },
+        tableColumnWidths: {
+            type: 'array',
+            default: []
+        },
         bodyBackgroundColor: {
             type: 'string',
             default: ''
@@ -154,6 +158,7 @@ registerBlockType('custom-spreadsheet-upload/block', {
 
             setAttributes({checkedColumnList: Array(parsedTable[0].length).fill(false)});
             setAttributes({columnSpecialCharacters: Array(parsedTable[0].length).fill('')});
+            setAttributes({tableColumnWidths: Array(parsedTable[0].length).fill('')});
 
             setAttributes({fileUploaded: true});
         };
@@ -304,7 +309,9 @@ registerBlockType('custom-spreadsheet-upload/block', {
                 )
             )),
             // Style Settings
+
             createElement('div', null,
+                attributes.fileUploaded &&
                 createElement(InspectorControls, {group: 'styles'},
                     createElement(PanelBody, {title: 'Header Style', initialOpen: false}, 
                         createElement('div', null, 
@@ -332,6 +339,21 @@ registerBlockType('custom-spreadsheet-upload/block', {
                                 onChange: setBodyColor
                             },)
                         ),
+                    ),
+                    createElement(PanelBody, {title: 'Column Widths', initialOpen: false},
+                        attributes.headerList.map((item, index) => (
+                            createElement(TextControl, {
+                                key: index,
+                                label: item + " Width in %",
+                                type: 'number',
+                                value: attributes.tableColumnWidths[index],
+                                onChange: function (newColumnWidth) {
+                                    var newTableColumnWidths = attributes.tableColumnWidths.slice();
+                                    newTableColumnWidths[index] = newColumnWidth;
+                                    setAttributes({tableColumnWidths: newTableColumnWidths});
+                                }
+                            })
+                        ))
                     )
                 )
             )
@@ -371,7 +393,7 @@ registerBlockType('custom-spreadsheet-upload/block', {
                         row.map((cell, cellIndex) =>
                             !attributes.checkedColumnList[cellIndex] ? createElement(
                                 rowIndex === 0 ? 'th' : 'td',
-                                { key: cellIndex, className: 'column-' + (cellIndex+1), title: rowIndex === 0 ? headerDescription(cell) : null },
+                                { key: cellIndex, className: 'column-' + (cellIndex+1), style: rowIndex === 0 && attributes.tableColumnWidths[cellIndex] != '' ? {width: attributes.tableColumnWidths[cellIndex]} : null, title: rowIndex === 0 ? headerDescription(cell) : null },
                                 rowIndex === 0 ? createElement('div', {className: 'cell-content'}, createElement('div', {className: 'cell'}, cell), createElement('span', {className: 'dashicons dashicons-sort sort-icon'})) : (attributes.columnSpecialCharacters[cellIndex] != '' || attributes.columnSpecialCharacters[cellIndex] != null ? (cell + attributes.columnSpecialCharacters[cellIndex]) : cell)
                             ) : null
                         ) 

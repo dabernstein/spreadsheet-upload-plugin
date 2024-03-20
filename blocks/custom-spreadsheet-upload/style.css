@@ -10,6 +10,15 @@ table.spreadsheet-table, .spreadsheet-table tr, .spreadsheet-table th, .spreadsh
     border: 1px solid;
 }
 
+table.spreadsheet-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    width: auto;
+}
+
 .title-row {
     font-weight: bold;
 }
