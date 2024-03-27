@@ -1,10 +1,4 @@
 <?php
-/*
-Plugin Name: Custom Admin Menu
-Description: Custom admin menu tab for managing fields.
-Version: 1.0
-Author: Your Name
-*/
 
 // Add the custom admin menu
 function custom_admin_menu() {

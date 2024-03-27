@@ -1,9 +1,11 @@
 <?php
 /*
 Plugin Name: Spreadsheet Upload
-Description: Allows you to upload a spreadsheet into a component on your page and set definitions for the headers.
+Plugin URI: https://github.com/dabernstein/spreadsheet-upload-plugin
+Description: Allows you to upload a spreadsheet into your page and set and modify the spreadsheet after upload
 Version: 1.7.6
 Author: Daniel Bernstein
+Author URI: https://www.techdbernstein.com
 */
 
 //Adding main component file
