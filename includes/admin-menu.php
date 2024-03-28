@@ -3,8 +3,8 @@
 // Add the custom admin menu
 function custom_admin_menu() {
     add_menu_page(
-        'Custom Fields',        // Page title
-        'Custom Fields',        // Menu title
+        'Ranking Fields',        // Page title
+        'Ranking Fields',        // Menu title
         'manage_options',       // Capability
         'custom-admin-menu',    // Menu slug
         'custom_menu_page'      // Callback function
@@ -50,11 +50,16 @@ function custom_menu_page() {
         }
     </style>
     <div class="wrap">
-        <h2>Custom Fields</h2>
+        <h2>Ranking Fields</h2>
 
-        <p>Welcome to the Custom Fields admin page. Use the form below to add or modify fields.</p>
+        <p>Welcome to the Ranking Fields admin page. Click on Add Another Group to add a ranking header field.</p>
 
         <form method="post" action="">
+            <!-- Allow the addition of a new group -->
+            <p><a href="#" id="add-group" class="button">Add Another Group</a></p>
+
+            <?php submit_button('Save Fields'); ?>
+
             <?php
             // Check if form is submitted
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -102,11 +107,6 @@ function custom_menu_page() {
                     </div>
                 <?php } ?>
             </div>
-
-            <!-- Allow the addition of a new group -->
-            <p><a href="#" id="add-group">Add Another Group</a></p>
-
-            <?php submit_button('Save Fields'); ?>
         </form>
 
         <script>
@@ -134,8 +134,8 @@ function custom_menu_page() {
                     '<div><strong>Description</strong></div>' +
                     '<div><textarea name="fields3[]"></textarea></div>' +
                     '</div>' +
-                    '</div>'
-                table.insertAdjacentHTML('beforeend', newForm);
+                    '</div>';
+                table.insertAdjacentHTML('afterbegin', newForm);
             });
         </script>
     </div>
