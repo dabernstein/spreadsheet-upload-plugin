@@ -152,6 +152,8 @@ registerBlockType('custom-spreadsheet-upload/block', {
             const parsedTable = parseHTMLTable(htmlString);
 
             console.log(headerShortHand(parsedTable[0]));
+            
+            parsedTable[0] = headerShortHand(parsedTable[0]);
 
             setAttributes({headerList: parsedTable[0]});
             setAttributes({parsedTable: parsedTable});
@@ -234,17 +236,14 @@ registerBlockType('custom-spreadsheet-upload/block', {
 
         // Edit return statment for the admin view
         return createElement('div', null, 
+            createElement('h3', null, 'Custom Ranking Spreadsheet'),
+            // File Upload
             createElement('div', null, 
                 createElement('input', {
                     type: 'file',
                     onChange: onFileChange,
                     accept: '.xlsx',
                 }),
-                createElement(Button, {
-                    onClick: function () {
-                        console.log(attributes.parsedTable);
-                    },
-                }, 'Log Parsed Data'),
             ),
             // Block Settings
             createElement('div', null, 
@@ -362,6 +361,8 @@ registerBlockType('custom-spreadsheet-upload/block', {
 
     //Save return statement for the front-end view
     save: ({ attributes }) => {
+        attributes.parsedTable[0] = headerShortHand(attributes.parsedTable[0]);
+
         // Parse the HTML table content into rows and cells
         const rows = attributes.parsedTable
 
@@ -378,23 +379,26 @@ registerBlockType('custom-spreadsheet-upload/block', {
         }
         else {
             return createElement('div', null, createElement(
-                'table',
+                'div',
                 {
                     style: {  },
                     className: 'spreadsheet-table sortableTable',
                 },
-                createElement('tbody', null, 
+                createElement('div', { className: 'spreadsheet-body' }, 
                 // Iterate over the parsed rows and create TableRow components
                 rows.map((row, rowIndex) =>
                     createElement(
-                        'tr',
-                        { key: rowIndex, style: rowIndex === 0 ? headerStyle : dataCellStyle, className: rowIndex === 0 ? 'title-row' : null },
+                        'div',
+                        { key: rowIndex, style: rowIndex === 0 ? headerStyle : dataCellStyle, className: rowIndex === 0 ? 'title-row spreadsheet-row' : 'spreadsheet-row' },
                         // Iterate over the cells in each row and create TableCell components
                         row.map((cell, cellIndex) =>
                             !attributes.checkedColumnList[cellIndex] ? createElement(
-                                rowIndex === 0 ? 'th' : 'td',
-                                { key: cellIndex, className: 'column-' + (cellIndex+1), style: rowIndex === 0 && attributes.tableColumnWidths[cellIndex] != '' ? {width: attributes.tableColumnWidths[cellIndex]} : null, title: rowIndex === 0 ? headerDescription(cell) : null },
-                                rowIndex === 0 ? createElement('div', {className: 'cell-content'}, createElement('div', {className: 'cell'}, cell), createElement('span', {className: 'dashicons dashicons-sort sort-icon'})) : (attributes.columnSpecialCharacters[cellIndex] != '' || attributes.columnSpecialCharacters[cellIndex] != null ? (cell + attributes.columnSpecialCharacters[cellIndex]) : cell)
+                                'div',
+                                { key: cellIndex, className: rowIndex === 0 ? 'spreadsheet-cell spreadsheet-title' : 'spreadsheet-cell', style: rowIndex === 0 && attributes.tableColumnWidths[cellIndex] != '' ? {width: attributes.tableColumnWidths[cellIndex]} : null, title: rowIndex === 0 ? headerDescription(cell) : null },
+                                rowIndex === 0 ? 
+                                    [createElement('div', {className : 'header-cell'}, cell), createElement('span', { className: 'dashicons dashicons-sort' }, null)] : 
+                                (attributes.columnSpecialCharacters[cellIndex] != '' || attributes.columnSpecialCharacters[cellIndex] != null ? 
+                                    (cell + attributes.columnSpecialCharacters[cellIndex]) : cell)
                             ) : null
                         ) 
                     ) 
