@@ -64,10 +64,10 @@ function custom_menu_page() {
             // Check if form is submitted
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Process form data here
-                $field0 = $_POST['fields0'];
-                $field1 = $_POST['fields1'];
-                $field2 = $_POST['fields2'];
-                $field3 = $_POST['fields3'];
+                $field0 = array_map('trim', $_POST['fields0']);
+                $field1 = array_map('trim', $_POST['fields1']);
+                $field2 = array_map('trim', $_POST['fields2']);
+                $field3 = array_map('trim', $_POST['fields3']);
 
                 // Save the fields to the database
                 $fields = array();
