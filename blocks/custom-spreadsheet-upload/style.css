@@ -37,7 +37,12 @@
     background-color: #f1f1f1;
     font-weight: bold;
     width: auto;
-    display: fixed;
+    cursor: pointer;
+}
+
+.spreadsheet-title {
+    display: flex;
+    flex-flow: column;
 }
 
 .spreadsheet-cell {
